@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken'
-console.log("called loggedin ?")
+import User from '../models/user.model.js';
 const isLoggedIn = async (req,res,next)=>{
+    console.log("is in logged in");
     const {token} = req.cookies;
-    console.log("Entered into isLoggedIn")
     if(!token){
         console.log("invalid token")
         return res.status(500).json({
@@ -13,7 +13,9 @@ const isLoggedIn = async (req,res,next)=>{
 
     const userDetails = await jwt.verify(token, process.env.SECRET)
 
-    req.user = userDetails;
+    const id = userDetails.id;
+    const data = await User.findById(id);
+    req.user = data;
 
     next();
 }

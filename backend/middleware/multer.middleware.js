@@ -11,5 +11,4 @@ const upload = multer({
         },
     }),
 })
-console.log("im here in multer");
 export default upload;

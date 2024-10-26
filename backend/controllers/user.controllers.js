@@ -3,6 +3,10 @@ import bcrypt from 'bcrypt';
 import cloudinary from 'cloudinary'
 import fs from 'fs/promises'
 import User from '../models/user.model.js'
+import courseMap from '../models/courseMap.model.js'
+import Course from '../models/course.model.js'
+import mongoose from 'mongoose';
+import Attendance from '../models/attendence.model.js'
 
 const register = async(req,res) =>{
     const {name,email,password} = req.body;
@@ -159,10 +163,143 @@ const updatePassword = async function(req,res){
 }
 
 
+const requestCourse = async(req,res)=>{
+    const {course_id} = req.body;
+    console.log(req.user);
+    const role = req.user.role;
+    if(!course_id){
+        return res.status(200).json({
+            success:false,
+            message:"All credentials are required"
+        })
+    }
+
+    const course = await Course.findById(course_id);
+    console.log("role = ",role);
+    // if(role==="STUDENT"){
+    //     const semester = req.body.semester;
+    //     console.log("semester",semester, course.semester);
+    //     if(semester !== course.semester){
+    //         return res.status(400).json({
+    //             success:false,
+    //             message:"Course of another semester is being requested"
+    //         })
+    //     }
+    // }
+
+    try{
+        const user_id = req.user.id;
+        const semester = course.semester;
+        const course_map = new courseMap({
+            user_id,
+            course_id,
+            semester
+        })
+        await course_map.save();
+        return res.status(200).json({
+            success:true,
+            message:"Request for the course has been registered"
+        })
+    }catch(err){
+        res.status(400).json({
+            success:false,
+            message:"something went wrong while registering for course"
+        })
+    }
+}
+
+const getAttendanceList = async (req, res) => {
+    const {course_id} = req.body;
+    if (!course_id) {
+        return res.status(400).json({
+            success: false,
+            message: "Enter courseId"
+        });
+    }
+
+    const user_id = req.user.id;
+
+    const valid = await courseMap.findOne({
+        user_id,
+        course_id
+     });
+    if (!valid) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid authorization"
+        });
+    }
+
+    const users = await courseMap.aggregate([
+        { $match: {
+            course_id: new mongoose.Types.ObjectId(course_id)
+         } },
+        {
+            $lookup: {
+                from: "users",
+                localField: "user_id",
+                foreignField: "_id",
+                as: "userDetails"
+            }
+        },
+        { $unwind: "$userDetails" },
+        { $match: { "userDetails.role": "STUDENT" } },
+        {
+            $project: {
+                user_id: 1,
+                courseId: 1,
+                "userDetails.name": 1,
+                "userDetails.email": 1,
+            }
+        }
+    ]);
+
+    return res.status(200).json({
+        success: true,
+        users
+    });
+};
+
+const markAttendance = async(req,res)=>{
+    const {attendanceArray, course_id} = req.body;
+    //check for the validation of attendance array
+    console.log(attendanceArray,course_id);
+    if(!course_id){
+        return res.status(400).json({
+            success:false,
+            message:"Course Id not available"
+        })
+    }
+
+    const user_id = req.user.id;
+    const courseDetails = await courseMap.find({user_id, course_id})
+
+    if(!courseDetails){
+            return res.status(400).json({
+                success:false,
+                message:"invalid authorization"
+            })
+    }
+
+    const newAttendance = await Attendance.create({
+        course_id,
+        students:attendanceArray
+    })
+
+    res.status(200).json({
+        success:true,
+        message:"attendance marked successfully",
+        newAttendance
+    })
+}
+
 export{
     register,
     login,
     about,
     editUserDetails,
     updatePassword,
+    requestCourse,
+    getAttendanceList,
+    markAttendance
 }
