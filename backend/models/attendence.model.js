@@ -10,7 +10,7 @@ const attendanceSchema = new mongoose.Schema({
   students:[{
     student_id:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'Student',
+        ref:'User',
         required:true
     },
     flag:{
@@ -20,4 +20,4 @@ const attendanceSchema = new mongoose.Schema({
   }],
 }, { timestamps: true });
 
-module.exports = mongoose.model('Attendance', attendanceSchema);
+export default mongoose.model('Attendance', attendanceSchema);

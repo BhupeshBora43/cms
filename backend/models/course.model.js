@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 
-const courseMap = new mongoose.Schema({
-  name:{
+const course = new mongoose.Schema({
+  courseName:{
     type:String,
     required:true,
     unique:true
   },
-  code:{
+  courseCode:{
     type:String,
     required:true,
     unique:true
@@ -32,4 +32,4 @@ const courseMap = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('courseMap', courseMap);
+export default mongoose.model('Course', course);
