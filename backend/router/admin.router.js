@@ -1,5 +1,5 @@
 import express from "express";
-import {  addCourse, assignRole, coursesToVerify, deleteUser,getUserAccount, verifyCourse } from "../controllers/admin.controllers.js";
+import {  addCourse, assignRole, coursesToVerify, deleteUser,getUserAccount, verifyCourse } from "../controllers/admin.controllers.js"
 import checkRole from "../middleware/role.middleware.js";
 import isLoggedIn from "../middleware/isLoggedIn.middleware.js";
 
