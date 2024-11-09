@@ -30,7 +30,7 @@ const register = async(req,res) =>{
             message:"user created successfully"
         });
     }catch(err){
-        console.log(err);
+        console.log(err.message);
         return res.status(400).json({
             success:false,
             message:"registration unsuccessful"
@@ -50,8 +50,16 @@ const login = async(req,res)=>{
 
     try{
         const user = await User.findOne({email}).select('+password')
+
+        if(!user){
+            return res.status(400).json({
+                success:false,
+                message:"please enter valid credential"
+            })
+        }
+
         const isPasswordValid = await bcrypt.compare(password,user.password);
-        if(!user || !isPasswordValid){
+        if(!isPasswordValid){
             return res.status(400).json({
                 success:false,
                 message:"please enter valid credential"
@@ -99,13 +107,12 @@ const editUserDetails = async function (req, res){
     const email = req.user.email;
     const user = await User.findOne({email});
     const { name } = req.body;
-    console.log("name = ",name);
     if(name){
         try{
             user.name = name;
             user.save();
         }catch(err){
-            res.status(400).json({
+            return res.status(400).json({
                 success:false,
                 message:"failed to change the name"
             })
@@ -262,7 +269,7 @@ const getAttendanceList = async (req, res) => {
 const markAttendance = async(req,res)=>{
     const {attendanceArray, course_id} = req.body;
     //check for the validation of attendance array
-    //in case all the attendance aren't marked mark them false by default
+    //in case all the attendance aren't marked mark them true by default for students enrolled in the course
     console.log(attendanceArray,course_id);
     if(!course_id){
         return res.status(400).json({
@@ -318,12 +325,7 @@ const viewAttendance = async(req,res)=>{
             message:"Successfully retrieved data",
             totalAttendenceToDate
         })
-        // const totalAttendanceOfUser = totalAttendenceToDate.filter((value)=>{
-        //     value.students.filter(element => {
-        //         console.log(element.student_id , user_id);
-        //         return element.student_id === user_id;
-        //     });
-        // })
+
         const totalAttendanceOfUser = totalAttendenceToDate.map((value)=>{
             const res = value.students.filter((inval)=> inval.student_id == user_id);
             return res;
@@ -334,14 +336,75 @@ const viewAttendance = async(req,res)=>{
             totalAttendanceOfUser
         })
     }catch(err){
-        console.log(err);
-        
         return res.status(400).json({
             success:false,
             message:"Something went wrong while fetching attendance record"
         })
     }
 }
+
+const addCourseSynopsis = async(req,res)=>{
+    const {course_id,description} = req.body;
+    const course = await Course.findById(course_id);
+    if(!course){
+        return res.status(400).json({
+            success:false,
+            message:"valid course_id is required"
+        })
+    }
+
+    const user_id = req.user.id;
+    const isValid = courseMap.find({user_id,course_id});
+    if(!isValid){
+        return res.status(400).json({
+            success:false,
+            message:"unauthorized access"
+        })
+    }
+    try{
+        if(description){
+            course.description = description;
+            course.save();
+        }
+    }catch(err){
+        console.log(err.message);
+        return res.status(400).json({
+            success:false,
+            message:"something went wrong"
+        })
+    }
+    if(req.file){
+        try{
+            const result = await cloudinary.v2.uploader.upload(req.file.path,{
+                resource_type: 'video',
+                folder: 'course_synopsis'
+            })
+            if(result)
+            {
+                console.log("Full result = ", JSON.stringify(result, null, 2));
+                course.video.public_id = result.public_id;
+                course.video.secure_url = result.secure_url;
+                console.log("secure url = ",course.video.secure_url);
+
+                console.log("removing file");
+                await course.save();
+                fs.rm(`../uploads/${req.file.filename}`);
+            }
+        }catch(e){
+            console.log(e.message);
+            return res.status(400).json({
+                success:false,
+                message:"please reupload the synopsis"
+            })
+        }
+    }
+    res.status(200).json({
+        success:true,
+        message:"course details updated successfully",
+        course
+    })
+}
+
 
 export{
     register,
@@ -352,5 +415,6 @@ export{
     requestCourse,
     getAttendanceList,
     markAttendance,
-    viewAttendance
+    viewAttendance,
+    addCourseSynopsis
 }
