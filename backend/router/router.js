@@ -1,7 +1,7 @@
 import express from "express";
 
 const router = express.Router();
-import { register, login, about, editUserDetails, updatePassword, requestCourse, getAttendanceList, markAttendance } from '../controllers/user.controllers.js';
+import { register, login, about, editUserDetails, updatePassword, requestCourse, getAttendanceList, markAttendance, viewAttendance } from '../controllers/user.controllers.js';
 
 import upload from '../middleware/multer.middleware.js'
 import isLoggedIn from '../middleware/isLoggedIn.middleware.js'
@@ -18,4 +18,5 @@ router.post('/updatePassword', isLoggedIn, updatePassword);
 router.post('/requestCourse',isLoggedIn,requestCourse)
 router.post('/getAttendanceList',isLoggedIn,checkRole("PROFESSOR"),getAttendanceList);
 router.post('/markAttendance',isLoggedIn,checkRole("PROFESSOR"),markAttendance);
+router.post('/viewAttendance',isLoggedIn,viewAttendance)
 export default router;

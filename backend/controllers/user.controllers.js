@@ -146,7 +146,7 @@ const editUserDetails = async function (req, res){
 }
 
 const updatePassword = async function(req,res){
-    console.log("reached update");
+    // previous password required for auth
     const {password} = req.body;
     if(!password){
         res.status(400).json({
@@ -175,7 +175,6 @@ const requestCourse = async(req,res)=>{
     }
 
     const course = await Course.findById(course_id);
-    console.log("role = ",role);
     // if(role==="STUDENT"){
     //     const semester = req.body.semester;
     //     console.log("semester",semester, course.semester);
@@ -263,6 +262,7 @@ const getAttendanceList = async (req, res) => {
 const markAttendance = async(req,res)=>{
     const {attendanceArray, course_id} = req.body;
     //check for the validation of attendance array
+    //in case all the attendance aren't marked mark them false by default
     console.log(attendanceArray,course_id);
     if(!course_id){
         return res.status(400).json({
@@ -293,6 +293,56 @@ const markAttendance = async(req,res)=>{
     })
 }
 
+const viewAttendance = async(req,res)=>{
+    const {course_id} = req.body;
+    if(!course_id){
+        return res.status(400).json({
+            success:false,
+            message:"Provide valid course_id"
+        })
+    }
+
+    try{
+        const user_id = req.user.id;
+        const role = req.user.role;
+        const hasCourse = courseMap.find({course_id, user_id});
+        if(!hasCourse){
+            return res.status(400).json({
+                success:false,
+                message:"the user is not authorized to access the attendance list"
+            })
+        }
+        const totalAttendenceToDate = await Attendance.find({course_id})
+        if(role==="PROFESSOR")return res.status(200).json({
+            success:true,
+            message:"Successfully retrieved data",
+            totalAttendenceToDate
+        })
+        // const totalAttendanceOfUser = totalAttendenceToDate.filter((value)=>{
+        //     value.students.filter(element => {
+        //         console.log(element.student_id , user_id);
+        //         return element.student_id === user_id;
+        //     });
+        // })
+        const totalAttendanceOfUser = totalAttendenceToDate.map((value)=>{
+            const res = value.students.filter((inval)=> inval.student_id == user_id);
+            return res;
+        })
+        return res.status(200).json({
+            success:true,
+            message:"Successfully retrieved data",
+            totalAttendanceOfUser
+        })
+    }catch(err){
+        console.log(err);
+        
+        return res.status(400).json({
+            success:false,
+            message:"Something went wrong while fetching attendance record"
+        })
+    }
+}
+
 export{
     register,
     login,
@@ -301,5 +351,6 @@ export{
     updatePassword,
     requestCourse,
     getAttendanceList,
-    markAttendance
+    markAttendance,
+    viewAttendance
 }

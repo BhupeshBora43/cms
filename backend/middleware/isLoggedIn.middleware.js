@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/user.model.js';
 const isLoggedIn = async (req,res,next)=>{
-    console.log("is in logged in");
     const {token} = req.cookies;
     if(!token){
         console.log("invalid token")
