@@ -39,7 +39,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100 py-12 flex flex-col items-center">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">Welcome!!! {data.name}</h1>
+      {/* <h1 className="text-3xl font-bold mb-8 text-gray-800">Welcome!!! {data.name}</h1> */}
       {actions.length ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {actions.map((action, index) => (

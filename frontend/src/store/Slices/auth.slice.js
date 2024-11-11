@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
 import axiosInstance from "../../Helpers/axiosInstance";
+import { Link, useNavigate } from "react-router-dom";
 
 const initialState = {
     isLoggedIn: localStorage.getItem("isLoggedIn") || false,
@@ -41,7 +42,7 @@ export const updateUserProfile = createAsyncThunk(
     "/auth/updateProfile",
     async (formData, { getState }) => {
         try {
-
+            
             const config = {
                 headers: { "Content-Type": "multipart/form-data" },
             };
@@ -75,6 +76,7 @@ const authSlice = createSlice({
             .addCase(userLogin.fulfilled, (state, action) => {
                 if (action?.payload) {
                     state.isLoggedIn = true;
+                    console.log("res",action.payload.data)
                     localStorage.setItem("isLoggedIn", true);
                     localStorage.setItem("data", JSON.stringify(action?.payload?.data));
                     localStorage.setItem("role", action?.payload?.data.role);

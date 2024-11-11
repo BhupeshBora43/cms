@@ -12,10 +12,10 @@ function Homepage() {
         {!isLoggedIn ? (
           <div className="space-x-4">
             <Link to="/signup">
-              <button className="bg-green-500 hover:bg-green-600 px-6 py-2 rounded">Get Started</button>
+              <button className="bg-green-500 hover:bg-green-600 px-6 py-2 rounded text-white">Get Started</button>
             </Link>
             <Link to="/login">
-              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded">Login</button>
+              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded text-white">Login</button>
             </Link>
           </div>
         ) : (
