@@ -8,7 +8,6 @@ const initialState = {
     role: localStorage.getItem("role") || null,
 };
 
-// Thunk for User Login
 export const userLogin = createAsyncThunk("/auth/login", async (data) => {
     try {
         const res = axiosInstance.post("/user/login", data);

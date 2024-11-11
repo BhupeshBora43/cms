@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateUserProfile } from '../store/Slices/auth.slice'; // Assuming this action is written
+import { updateUserProfile } from '../store/Slices/auth.slice';
 
 function Profile() {
   const dispatch = useDispatch();
@@ -16,7 +16,7 @@ function Profile() {
     if (data) {
       setProfileData({
         name: data.name || '',
-        avatar: data.avatar.secure_url||""
+        avatar: data.avatar?.secure_url||""
       });
     }
   }, [data]);
@@ -59,7 +59,7 @@ function Profile() {
       <div className="flex justify-center mb-4">
         <label htmlFor="avatarUpload" className="cursor-pointer">
           <img
-            src={data.avatar.secure_url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png'} // Use default avatar if none
+            src={data.avatar?.secure_url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png'} // Use default avatar if none
             alt="Profile Avatar"
             className="w-32 h-32 rounded-full object-cover border"
           />
