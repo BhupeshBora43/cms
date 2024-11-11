@@ -34,11 +34,13 @@ function Login() {
             return;
         }
 
-        dispatch(userLogin(data))
+        const res = await dispatch(userLogin(data))
+        if(res.payload){
+            navigate('/')
+        }
     }
 
   return (
-    <Layout>
         <div className='flex justify-center w-[100vw] items-center h-full '>
         <form onSubmit={OnLogin}  className='space-y-4 w-[30%] '>
             <input required onChange={onUserInput} value={data?.email} placeholder='Email' className='border border-black outline-none w-full px-6 py-6 placeholder:px-4 block' type="text" name='email' />
@@ -48,7 +50,6 @@ function Login() {
             <button type='submit' className='bg-blue-700 hover:bg-blue-800 w-full py-3 transition-all duration-150'>Login</button>
         </form>
     </div>
-    </Layout>
   )
 }
 

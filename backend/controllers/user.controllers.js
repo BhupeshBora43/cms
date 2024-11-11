@@ -47,7 +47,6 @@ const login = async(req,res)=>{
             message:"all credential are required"
         })
     }
-
     try{
         const user = await User.findOne({email}).select('+password')
 
@@ -105,6 +104,7 @@ const about = async function(req,res){
 
 const editUserDetails = async function (req, res){
     const email = req.user.email;
+    console.log(" in edit ");
     const user = await User.findOne({email});
     const { name } = req.body;
     if(name){
@@ -118,6 +118,7 @@ const editUserDetails = async function (req, res){
             })
         }
     }
+    console.log(" file ",req.file);
     if(req.file){
         try{
             const result = await cloudinary.v2.uploader.upload(req.file.path,{
@@ -148,7 +149,7 @@ const editUserDetails = async function (req, res){
     res.status(200).json({
         success:true,
         message:"User details updated successfully",
-        user
+        data:user
     })
 }
 

@@ -36,7 +36,7 @@ function Signup() {
     }
 
   return (
-    <div className='flex justify-center w-[100vw] '>
+    <div className='flex justify-center w-[100vw] items-center h-[80vh]'>
         <form onSubmit={OnSignup}  className='space-y-4 w-[30%] '>
             <input required onChange={onUserInput} value={data?.name} placeholder='Name' className='border border-black outline-none w-full px-6 py-6 placeholder:px-4 ' type="text" name='name' />
 
