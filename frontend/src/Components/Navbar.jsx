@@ -1,4 +1,3 @@
-import React from 'react';
 import Logo from './Logo';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/Slices/auth.slice';
@@ -14,7 +13,7 @@ function Navbar() {
   };
 
   return (
-    <div className="w-[100vw] bg-pink-400 h-16 flex items-center justify-between px-6 shadow-md">
+    <div className="w-[100vw] bg-orange-500 h-16 flex items-center justify-between px-6 shadow-md">
       <Logo />
 
       <div className="flex space-x-4 items-center">

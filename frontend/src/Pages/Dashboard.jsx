@@ -1,4 +1,3 @@
-import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -6,24 +5,26 @@ function Dashboard() {
   const userRole = useSelector((state) => state.auth.role);
   const data = useSelector((state) => state.auth.data);
   const studentActions = [
-    { name: 'View Courses', path: '/courses', icon: '📚' },
-    { name: 'Request Course', path: '/request-course', icon: '📝' },
-    { name: 'View Attendance', path: '/attendance', icon: '📅' },
+    { name: 'View Courses', path: '/viewCourse', icon: '📚' },
+    { name: 'View Attendance', path: '/ViewAttendance', icon: '📅' },
+    { name: 'Request Course', path: '/requestCourse', icon: '📝' },
   ];
 
   const professorActions = [
-    ...studentActions,
-    { name: 'Mark Attendance', path: '/mark-attendance', icon: '✅' },
-    { name: 'Add Synopsis', path: '/add-synopsis', icon: '✏️' },
+    { name: 'View Attendance', path: '/ViewAttendance', icon: '📅' },
+    { name: 'Request Course', path: '/requestCourse', icon: '📝' },
+    { name: 'View Courses', path: '/courseList', icon: '📚' },
+    { name: 'Mark Attendance', path: '/MarkAttendance', icon: '✅' },
+    { name: 'Add Synopsis', path: '/addSynopsis', icon: '✏️' },
   ];
 
   const adminActions = [
-    { name: 'Get User Account', path: '/get-user', icon: '🧑‍💼' },
-    { name: 'Assign Role', path: '/assign-role', icon: '🔄' },
-    { name: 'Delete User', path: '/delete-user', icon: '🗑️' },
-    { name: 'Add Course', path: '/add-course', icon: '➕' },
-    { name: 'Courses to Verify', path: '/verify-courses', icon: '✅' },
-    { name: 'Verify Course', path: '/verify-course', icon: '✔️' },
+    { name: 'View Courses', path: '/viewCourse', icon: '📚' },
+    { name: 'Get User Account', path: '/viewUsers', icon: '🧑‍💼' },
+    { name: 'Assign Role', path: '/assignRole', icon: '🔄' },
+    { name: 'Delete User', path: '/deleteUser', icon: '🗑️' },
+    { name: 'Add Course', path: '/addCourse', icon: '➕' },
+    { name: 'Verify Course', path: '/verifyCourse', icon: '✅' },
   ];
 
   const noRoleMessage = "You don't have a role assigned yet. Please contact admin.";
@@ -39,7 +40,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100 py-12 flex flex-col items-center">
-      {/* <h1 className="text-3xl font-bold mb-8 text-gray-800">Welcome!!! {data.name}</h1> */}
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">Welcome!!! {data.name}</h1>
       {actions.length ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {actions.map((action, index) => (

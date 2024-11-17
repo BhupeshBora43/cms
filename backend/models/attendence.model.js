@@ -15,7 +15,6 @@ const attendanceSchema = new mongoose.Schema({
     },
     flag:{
         type:Boolean,
-        required:true,
         default:true
     }
   }],

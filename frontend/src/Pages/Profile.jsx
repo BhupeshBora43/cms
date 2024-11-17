@@ -4,23 +4,21 @@ import { updateUserProfile } from '../store/Slices/auth.slice';
 
 function Profile() {
   const dispatch = useDispatch();
-  const { data,role } = useSelector((state) => state.auth);
-
+  const { data, role } = useSelector((state) => state.auth);
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: '',
-    avatar: null
+    avatar: null,
+    previewImage: data.avatar?.secure_url||""
   });
-
   useEffect(() => {
     if (data) {
       setProfileData({
         name: data.name || '',
-        avatar: data.avatar?.secure_url||""
+        previewImage: data.avatar?.secure_url || ""
       });
     }
   }, [data]);
-
   const handleEditToggle = () => {
     if (isEditing) {
       handleSaveDetails();
@@ -31,12 +29,17 @@ function Profile() {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
+    const fileReader = new FileReader();
+
+    fileReader.readAsDataURL(file);
+
+    fileReader.addEventListener("load", function () {
       setProfileData({
         ...profileData,
-        avatar: file
+        previewImage:this.result,
+        avatar:file
       });
-    }
+      })
   };
 
   const handleInputChange = (e) => {
@@ -48,6 +51,7 @@ function Profile() {
   };
 
   const handleSaveDetails = async () => {
+    console.log("pd : ",profileData);
     await dispatch(updateUserProfile(profileData));
     setIsEditing(false);
   };
@@ -59,7 +63,7 @@ function Profile() {
       <div className="flex justify-center mb-4">
         <label htmlFor="avatarUpload" className="cursor-pointer">
           <img
-            src={data.avatar?.secure_url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png'} // Use default avatar if none
+            src={profileData.previewImage|| 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png'} // Use default avatar if none
             alt="Profile Avatar"
             className="w-32 h-32 rounded-full object-cover border"
           />

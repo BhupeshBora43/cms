@@ -13,12 +13,18 @@ const getUserAccount = async(req,res)=>{
     res.status(200).json({
         success:true,
         message:"successful",
-        user
+        data:user
     })
 }
 
 const assignRole = async(req,res)=>{
     const {id, role} = req.body;
+    if(role!=='STUDENT' && role!=="ADMIN" && role!=="PROFESSOR"){
+        return res.status(400).json({
+            success:false,
+            message:`${role} is not a valid role`
+        })
+    }
     if(!(role && id)){
         res.status(400).json({
             success:true,
@@ -38,23 +44,39 @@ const assignRole = async(req,res)=>{
     res.status(200).json({
         success:true,
         message:"user details updated",
-        user
+        data:user
     })
 }
 
 const addCourse = async(req,res)=>{
-    const {courseName, courseCode, semester} = req.body;
-    if (!(courseName && courseCode && semester)) {
+    const {courseName, courseCode, semester, branch} = req.body;
+    if (!(courseName && courseCode && semester && branch)) {
         return res.status(400).json({
             success: false,
-            message: "CourseName, CourseCode, and Semester are required",
+            message: "CourseName, CourseCode, Semester and branch are required",
         });
+    }
+
+    const course = await Course.findOne({
+        $or: [
+          { courseName: courseName },
+          { courseCode: courseCode }
+        ]
+      });
+
+    if(course){
+        console.log("course :",course)
+        return res.json({
+            success:false,
+            message:"course with the name or code already exists"
+        })
     }
     try{
         const course = await Course.create({
             semester,
             courseName,
-            courseCode
+            courseCode,
+            branch
         })
         return res.status(200).json({
             success:true,
@@ -70,8 +92,10 @@ const addCourse = async(req,res)=>{
 }
 
 const deleteUser = async(req,res)=>{
-    const id = req.body.id;
+    const {id} = req.body;
+    console.log(" id : ",id);
     const user = await User.findById(id);
+    console.log("user : ",user);
     if(!user){
         return res.status(400).json({
             success:false,
@@ -86,66 +110,76 @@ const deleteUser = async(req,res)=>{
     }
     try{
         await User.deleteOne({ _id:id });
+        const users = await User.find({});
         res.status(200).json({
             success:true,
             message:"user deleted successfully",
+            data:users
         })
     }catch(err){
+        const users = await User.find({});
         res.status(400).json({
             success:false,
-            message:"cant delete the user"
+            message:"cant delete the user",
+            data:users
         })
     }
 }
+const coursesToVerify = async (req, res) => {
+    console.log("Fetching courses to verify");
+    try {
+        // Fetch courses that are not approved
+        const CoursesToVerify = await courseMapModel.find({ approved: false })
+            .populate('user_id', 'name email') // Optional: to get user details
+            .populate('course_id', 'courseName'); // Optional: to get course details
 
-const coursesToVerify = async(req,res)=>{
-    console.log("in course fetch")
-    try{
-        const CoursesToVerify = await courseMapModel.find({});
         res.status(200).json({
-            success:true,
-            message:"All request fetched successfully",
-            CoursesToVerify
-        })
-    }catch(err){
+            success: true,
+            message: "Unapproved courses fetched successfully",
+            data: CoursesToVerify,
+        });
+    } catch (err) {
         res.status(400).json({
-            success:false,
-            message:"something went wrong while fetching course!!! Try again"
-        })
+            success: false,
+            message: "Something went wrong while fetching courses! Try again",
+        });
     }
-}
+};
 
-const verifyCourse = async(req, res)=>{
-    try{
-        const {verify, id} = req.body;
-        if(!id || !verify){
+
+const verifyCourse = async (req, res) => {
+    try {
+        const { verify, id } = req.body;
+        if (id === undefined || verify === undefined) {
             return res.status(400).json({
-                success:false,
-                message:"Enter all credentials"
-            })
+                success: false,
+                message: "Enter all credentials",
+            });
         }
         const courseMap = await courseMapModel.findById(id);
-        if(!courseMap){
+        if (!courseMap) {
             return res.status(400).json({
-                success:false,
-                message:"Enter correct credentials"
-            })
+                success: false,
+                message: "Course not found",
+            });
         }
 
         courseMap.approved = verify;
-        courseMap.save();
+        await courseMap.save();
+
         res.status(200).json({
-            success:true,
-            message:"Course request handled",
-            courseMap
-        })
-    }catch(err){
+            success: true,
+            message: verify ? "Course approved" : "Course disapproved",
+            courseMap,
+        });
+    } catch (err) {
         res.status(400).json({
-            success:false,
-            message:err.message
-        })
+            success: false,
+            message: err.message,
+        });
     }
-}
+};
+
 
 export {
     getUserAccount,

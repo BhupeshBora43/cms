@@ -1,16 +1,12 @@
 import { useState } from 'react'
 import { useDispatch } from 'react-redux';
 import {userLogin } from '../store/Slices/auth.slice';
-import Layout from '../Layouts/Layout';
 import { useNavigate } from 'react-router-dom';
 
 function Login() {
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
-    const [loading, isLoading] = useState(false)
-    const [error, setError] = useState(null)
 
     const [data ,setData] = useState({
         email:"",
@@ -41,7 +37,7 @@ function Login() {
     }
 
   return (
-        <div className='flex justify-center w-[100vw] items-center h-full '>
+        <div className='flex justify-center w-[100vw] items-center h-[80vh] '>
         <form onSubmit={OnLogin}  className='space-y-4 w-[30%] '>
             <input required onChange={onUserInput} value={data?.email} placeholder='Email' className='border border-black outline-none w-full px-6 py-6 placeholder:px-4 block' type="text" name='email' />
 

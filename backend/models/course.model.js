@@ -15,6 +15,10 @@ const course = new mongoose.Schema({
     type:Number,
     required:true,
   },
+  branch:{
+    type:String,
+    required:true,
+  },
   video:{
     secure_url:{
         type:String

@@ -1,14 +1,15 @@
-import Footer from '../Components/Footer'
-import Navbar from '../Components/Navbar'
+import Footer from '../Components/Footer';
+import Navbar from '../Components/Navbar';
 
-function Layout({children}) {
+function Layout({ children }) {
   return (
-    <div className=' max-w-[100vw] overflow-hidden h-[100vh] '>
-      <Navbar/>
-      {children}
-      <Footer/>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      {/* Main content area should grow to take available space */}
+      <main className="flex-grow">{children}</main>
+      <Footer />
     </div>
-  )
+  );
 }
 
-export default Layout
+export default Layout;
