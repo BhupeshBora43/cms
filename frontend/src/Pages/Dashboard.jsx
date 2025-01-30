@@ -14,8 +14,8 @@ function Dashboard() {
     { name: 'View Attendance', path: '/ViewAttendance', icon: '📅' },
     { name: 'Request Course', path: '/requestCourse', icon: '📝' },
     { name: 'View Courses', path: '/courseList', icon: '📚' },
-    { name: 'Mark Attendance', path: '/MarkAttendance', icon: '✅' },
-    { name: 'Add Synopsis', path: '/addSynopsis', icon: '✏️' },
+    // { name: 'Mark Attendance', path: '/courseList', icon: '✅' },
+    // { name: 'Add Synopsis', path: '/courseList', icon: '✏️' },
   ];
 
   const adminActions = [

@@ -1,7 +1,7 @@
 import express from "express";
 
 const router = express.Router();
-import { register, login, about, editUserDetails, updatePassword, requestCourse, getAttendanceList, markAttendance, viewAttendance, addCourseSynopsis, viewCourses, getUserCourses, courseStatus } from '../controllers/user.controllers.js';
+import { register, login, about, editUserDetails, updatePassword, requestCourse, getAttendanceList, markAttendance, viewAttendance, addCourseSynopsis, viewCourses, getUserCourses, courseStatus, refreshToken, googleSignIn } from '../controllers/user.controllers.js';
 
 import upload from '../middleware/multer.middleware.js'
 import isLoggedIn from '../middleware/isLoggedIn.middleware.js'
@@ -23,7 +23,13 @@ router.post('/viewAttendance',isLoggedIn,viewAttendance)
 router.post('/addCourseSynopsis',isLoggedIn,checkRole("PROFESSOR"),upload.single('file'), addCourseSynopsis);
 router.post('/getUserCourses',isLoggedIn,getUserCourses);
 router.get('/courseStatus',isLoggedIn,courseStatus);
-
-
+router.post('/refreshToken',refreshToken);
+router.post('/auth/google/callback', googleSignIn);
+router.all('*',(req,res)=>{
+    res.status(404).json({
+        success:false,
+        message:"route not found"
+    })
+})
 
 export default router;

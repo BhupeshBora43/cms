@@ -1,10 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
 import axiosInstance from "../../Helpers/axiosInstance";
-import axios from "axios";
 
 const initialState = {
-    isLoggedIn: localStorage.getItem("isLoggedIn") || false,
+    isLoggedIn: JSON.parse(localStorage.getItem("isLoggedIn")) || false,
     data: localStorage.getItem("data") ? JSON.parse(localStorage.getItem("data")) : null,
     role: localStorage.getItem("role") || null,
     users: [],
@@ -21,11 +20,12 @@ export const userLogin = createAsyncThunk("/auth/login", async (data) => {
         });
         return (await res).data;
     } catch (error) {
+        console.log(error.response.data.message);
         toast.error(error.response.data.message);
     }
 });
 
-export const userSignup = createAsyncThunk("/auth/signup", async (data) => {
+export const userSignup = createAsyncThunk("/auth/signup", async (data, { rejectWithValue }) => {
     try {
         const res = axiosInstance.post("/user/register", data);
         toast.promise(res, {
@@ -34,37 +34,52 @@ export const userSignup = createAsyncThunk("/auth/signup", async (data) => {
         });
         return (await res).data;
     } catch (error) {
-        toast.error(error.response.data.message);
+        toast.error(error.response?.data?.message || 'Failed to sign up');
+        return rejectWithValue(error.response?.data);
     }
 });
 
+export const googleSignup = createAsyncThunk("/auth/googleSignup", async (tokenId, { rejectWithValue }) => {
+    try {
+        const res = axiosInstance.post("/user/auth/google/callback", tokenId, { withCredentials: true });
+        toast.promise(res, {
+            loading: "Creating account...",
+            success: (data) => data.data.message,
+        });
+        return (await res).data;
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to sign up with Google');
+        console.log(error.response?.data)
+        return rejectWithValue(error.response?.data);
+    }
+});
 
 export const updateUserProfile = createAsyncThunk(
     '/auth/updateProfile',
     async (formData) => {
-      try {
-        const config = {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        };
+        try {
+            const config = {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            };
 
-        const form = new FormData();
-        form.append('name', formData.name);
-        if (formData.avatar) {
-          form.append('avatar', formData.avatar);
+            const form = new FormData();
+            form.append('name', formData.name);
+            if (formData.avatar) {
+                form.append('avatar', formData.avatar);
+            }
+
+            const res = axiosInstance.post(`/user/editUserDetails`, form, config);
+            toast.promise(res, {
+                loading: 'Updating profile...',
+                success: (data) => data.data.message,
+            });
+            return (await res).data;
+        } catch (error) {
+            console.log(error.response?.data?.message || error.message);
+            toast.error(error.response?.data?.message || 'Failed to update profile');
         }
-
-        const res = axiosInstance.post(`/user/editUserDetails`, form, config);
-        toast.promise(res, {
-          loading: 'Updating profile...',
-          success: (data) => data.data.message,
-        });
-        return (await res).data;
-      } catch (error) {
-        console.log(error.response?.data?.message || error.message);
-        toast.error(error.response?.data?.message || 'Failed to update profile');
-      }
     }
-  );
+);
 
 
 export const addCourse = createAsyncThunk("/admin/addCourse", async (data) => {
@@ -109,17 +124,17 @@ export const assignUserRole = createAsyncThunk("/admin/assignRole", async ({ id,
     }
 });
 
-export const deleteUser = createAsyncThunk("/admin/deleteUser", async(id)=>{
-    try{
-        console.log("id in thunk :",id);
-        const res = axiosInstance.post("/admin/deleteUser", {id});
+export const deleteUser = createAsyncThunk("/admin/deleteUser", async (id) => {
+    try {
+        console.log("id in thunk :", id);
+        const res = axiosInstance.post("/admin/deleteUser", { id });
         toast.promise(res, {
-            loading:"removing user from database",
-            success:"User removed"
+            loading: "removing user from database",
+            success: "User removed"
         })
         console.log((await res).data.data);
         return (await res).data.data
-    }catch(error){
+    } catch (error) {
         console.log("Error:", error.response?.data?.message || error.message);
         toast.error(error.response?.data?.message || "Failed to delete user");
         return rejectWithValue({ message: "Failed to delete user", id });
@@ -179,10 +194,25 @@ const authSlice = createSlice({
             localStorage.clear();
             toast.success("Logged out successfully");
         },
+        setLogin(state, action) {
+            console.log("called here ", action.payload);
+            state.isLoggedIn = action.payload;
+            localStorage.setItem("isLoggedIn", action.payload);
+        }
     },
     extraReducers: (builder) => {
         builder
             .addCase(userLogin.fulfilled, (state, action) => {
+                if (action?.payload) {
+                    state.isLoggedIn = true;
+                    localStorage.setItem("isLoggedIn", true);
+                    localStorage.setItem("data", JSON.stringify(action?.payload?.data));
+                    localStorage.setItem("role", action?.payload?.data.role);
+                    state.data = action?.payload?.data;
+                    state.role = action?.payload?.data.role;
+                }
+            })
+            .addCase(googleSignup.fulfilled, (state, action) => {
                 if (action?.payload) {
                     state.isLoggedIn = true;
                     localStorage.setItem("isLoggedIn", true);
@@ -207,7 +237,7 @@ const authSlice = createSlice({
                     user._id === updatedUser._id ? updatedUser : user
                 );
             })
-            .addCase(deleteUser.fulfilled, (state,action)=>{
+            .addCase(deleteUser.fulfilled, (state, action) => {
                 const updatedUsers = action?.payload;
                 state.users = updatedUsers;
             })
@@ -234,5 +264,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, setLogin } = authSlice.actions;
 export default authSlice.reducer;

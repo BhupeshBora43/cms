@@ -10,7 +10,7 @@ const app = express();
 
 app.use(morgan('combined'));
 app.use(cors({
-    origin:true,
+    origin: 'http://localhost:5173',
     credentials:true
 }))
 app.use(cookieParser())

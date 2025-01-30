@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom"
 import { Provider } from "react-redux"
 import store from './store/store.js'
 import {Toaster} from "react-hot-toast"
+import LogoutListener from './Helpers/isLoggedInEvent.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -9,7 +9,6 @@ const CourseView = () => {
     const [semester, setSemester] = useState('');
     const role = useSelector(state => state.auth.role);
 
-    
     const initialMount = async () => {
         const userEndpoint = role === 'STUDENT' ? 'user/viewCourses' : 'admin/viewCourses';
         try {

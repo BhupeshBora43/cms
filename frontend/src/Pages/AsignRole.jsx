@@ -47,7 +47,7 @@ const AssignRole = () => {
                         key={user._id}
                         className="flex justify-between items-center p-4 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-all"
                     >
-                        <span className="font-medium text-gray-600">{user.name}:</span>
+                        <span className="font-medium text-gray-600">{user.email}:</span>
                         {editRole.id === user._id ? (
                             <input
                                 type="text"

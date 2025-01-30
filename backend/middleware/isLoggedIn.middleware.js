@@ -1,22 +1,35 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/user.model.js';
-const isLoggedIn = async (req,res,next)=>{
-    const {token} = req.cookies;
+const isLoggedIn = async (req, res, next) => {
+    const { token } = req.cookies;
     if(!token){
-        console.log("invalid token")
-        return res.status(500).json({
+        return res.status(403).json({
             success:false,
-            message:"Incorrect credentials"
+            message:"Token not found"
         })
     }
+    try {
+        const userDetails = await jwt.verify(token, process.env.SECRET)
+        if (!userDetails) {
+            console.log("invalid token")
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect credentials"
+            })
+        }
 
-    const userDetails = await jwt.verify(token, process.env.SECRET)
+        const id = userDetails.id;
+        const data = await User.findById(id);
+        req.user = data;
 
-    const id = userDetails.id;
-    const data = await User.findById(id);
-    req.user = data;
-
-    next();
+        next();
+    } catch (e) {
+        console.log("invalid token")
+        return res.status(401).json({
+            success: false,
+            message: "Incorrect credentials"
+        })
+    }
 }
 
 export default isLoggedIn;

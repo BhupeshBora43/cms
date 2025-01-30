@@ -20,7 +20,7 @@ function Homepage() {
           </div>
         ) : (
           <Link to="/dashboard">
-            <button className="bg-orange-500 hover:bg-orange-600 px-6 py-2 rounded">Go to Dashboard</button>
+            <button className="bg-orange-500 hover:bg-orange-600 px-6 py-2 text-white rounded">Go to Dashboard</button>
           </Link>
         )}
       </div>

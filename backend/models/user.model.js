@@ -14,7 +14,6 @@ const userSchema = new mongoose.Schema({
     },
     password:{
         type:String,
-        required:true,
         select:false,
     },
     role:{
@@ -43,7 +42,14 @@ userSchema.methods = {
         return JWT.sign(
             {id:this._id,email:this.email},
             process.env.SECRET,
-            {expiresIn:'24h'}
+            {expiresIn:'15m'}
+        )
+    },
+    refreshToken(){
+        return JWT.sign(
+            {id:this._id,email:this.email},
+            process.env.REFRESH_SECRET,
+            {expiresIn:'7d'}
         )
     }
 }

@@ -59,7 +59,6 @@ function Profile() {
   return (
     <div className="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-md mt-10">
       <h2 className="text-2xl font-bold text-center mb-4">Profile</h2>
-
       <div className="flex justify-center mb-4">
         <label htmlFor="avatarUpload" className="cursor-pointer">
           <img

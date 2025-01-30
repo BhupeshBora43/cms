@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { fetchUserCourses } from '../store/Slices/auth.slice';
 import axiosInstance from '../Helpers/axiosInstance';
 
 const ViewAttendance = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
     const { userCourses } = useSelector(state => state.auth);
-
-    // State to store attendance data
+    const { role } = useSelector(state =>state.auth);
     const [attendanceData, setAttendanceData] = useState([]);
 
     useEffect(() => {
@@ -17,23 +14,19 @@ const ViewAttendance = () => {
         const data = storedData ? JSON.parse(storedData) : null;
         const userId = data?._id;
 
-        // Fetch courses for the user
         if (userId) {
             dispatch(fetchUserCourses(userId));
         }
     }, [dispatch]);
 
     useEffect(() => {
-        // Fetch attendance for each course once userCourses are loaded
         if (userCourses && userCourses.length > 0) {
             userCourses.forEach(async (course) => {
                 try {
-                    // Call the viewAttendance API to get attendance details
                     const response = await axiosInstance.post('/user/viewAttendance', {course_id:course.course_id
                     });
                     console.log("response:",response);
                     if (response.data.success) {
-                        // Update the state with the fetched attendance data
                         setAttendanceData((prevData) => [
                             ...prevData,
                             {
@@ -65,7 +58,6 @@ const ViewAttendance = () => {
                     </thead>
                     <tbody>
                         {userCourses?.map((course, index) => {
-                            // Find the attendance data for the current course
                             const courseAttendance = attendanceData.find(
                                 (data) => data.course_id === course.course_id
                             );

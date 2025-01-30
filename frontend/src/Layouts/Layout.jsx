@@ -5,7 +5,6 @@ function Layout({ children }) {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      {/* Main content area should grow to take available space */}
       <main className="flex-grow">{children}</main>
       <Footer />
     </div>

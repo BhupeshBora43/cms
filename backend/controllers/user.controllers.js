@@ -7,8 +7,11 @@ import courseMap from '../models/courseMap.model.js'
 import Course from '../models/course.model.js'
 import mongoose from 'mongoose';
 import Attendance from '../models/attendence.model.js'
+import jwt from 'jsonwebtoken';
 import courseMapModel from '../models/courseMap.model.js';
+import {OAuth2Client} from 'google-auth-library';
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const register = async (req, res) => {
     const { name, email, password } = req.body;
     if (!(name && email && password)) {
@@ -17,16 +20,17 @@ const register = async (req, res) => {
             message: "All fields are required"
         });
     }
-
+    console.log("here boss");
     try {
         const user = await User.create({
             name,
             email,
             password
         });
-        console.log("here ");
+        console.log("created user",user)
         return res.status(200).json({
             success: true,
+            data: user,
             message: "user created successfully"
         });
     } catch (err) {
@@ -65,13 +69,16 @@ const login = async (req, res) => {
         }
         user.password = undefined;
         const token = user.jwtToken();
+        const refreshToken = user.refreshToken();
+        console.log("token = ", token);
+        console.log("refreshToken = ", refreshToken);
         const cookieOptions = {
             maxAge: 36000000,
             httpOnly: true,
         }
 
         res.cookie('token', token, cookieOptions);
-
+        res.cookie('refreshToken', refreshToken, cookieOptions);
         res.status(200).json({
             success: true,
             data: user,
@@ -85,6 +92,104 @@ const login = async (req, res) => {
     }
 }
 
+const googleSignIn = async(req,res)=>{
+    const {tokenId} = req.body;
+    if(!tokenId){
+        return res.status(400).json({
+            success:false,
+            message:"tokenId is required"
+        })
+    }
+
+    try{
+        const ticket = await client.verifyIdToken({
+            idToken:tokenId,
+            audience:process.env.GOOGLE_CLIENT_ID
+        })
+        const {email,name,picture} = ticket.getPayload();
+
+        const user = await User.findOne({email});
+
+        if(!user){
+                console.log("created user")
+                user = await User.create({
+                email,
+                name,
+                avatar:{
+                    secure_url:picture,
+                    public_id:null
+                }
+            })
+        }
+        console.log("user   = ",user);
+        const token = user.jwtToken();
+        const refreshToken = user.refreshToken();
+
+        const cookieOptions = {
+            maxAge: 36000000,
+            httpOnly: true,
+        }
+
+        res.cookie('token', token, cookieOptions);
+        res.cookie('refreshToken', refreshToken, cookieOptions);
+        console.log("out from be");
+        return res.status(200).json({
+            success:true,
+            data:user,
+            message:"user logged in successfully"
+        })
+    }catch(err){
+        console.log(err);
+        return res.status(400).json({
+            success:false,
+            message:"something went wrong"
+        })
+    }
+}
+const refreshToken = async(req,res)=>{
+    console.log("resfresh token cvalled");
+    const {refreshToken} = req.cookies;
+    console.log("refreshTOken = ",refreshToken);
+    if(!refreshToken){
+        return res.status(400).json({
+            success:false,
+            message:"refresh token is required"
+        })
+    }
+    try{
+        console.log("here   a");
+        const decoded = jwt.verify(refreshToken,process.env.REFRESH_SECRET);
+        console.log("decoded = ",decoded);
+        if(!decoded){
+            return res.status(400).json({
+                success:false,
+                message:"invalid refresh token"
+            })
+        }
+
+        const user = await User.findById(decoded.id);
+        console.log("user = ",user);
+        const newToken = user.jwtToken();
+
+        const cookieOptions = {
+            maxAge: 3600000,
+            httpOnly:true
+        }
+        res.cookie('token',newToken,cookieOptions);
+
+        res.status(200).json({
+            success: true,
+            data: user,
+            message: 'user logged in successfully',
+        })
+    }catch(err){
+        console.log(err);
+        return res.status(400).json({
+            success:false,
+            message:"invalid refresh token"
+        })
+    }
+}
 const about = async function (req, res) {
     try {
         const userId = req.user.id;
@@ -103,7 +208,6 @@ const about = async function (req, res) {
 
 const editUserDetails = async function (req, res) {
     const email = req.user.email;
-    console.log(" in edit ");
     const user = await User.findOne({ email });
     const { name } = req.body;
     if (name) {
@@ -138,13 +242,14 @@ const editUserDetails = async function (req, res) {
                 fs.rm(`../uploads/${req.file.filename}`);
             }
         } catch (e) {
-            res.status(400).json({
+            console.log(e.message)
+            return res.status(400).json({
                 success: false,
-                message: "please reupload the image"
+                message: e.message
             })
         }
     }
-    res.status(200).json({
+    return res.status(200).json({
         success: true,
         message: "User details updated successfully",
         data: user
@@ -529,5 +634,7 @@ export {
     viewAttendance,
     addCourseSynopsis,
     getUserCourses,
-    courseStatus
+    courseStatus,
+    refreshToken,
+    googleSignIn
 }
